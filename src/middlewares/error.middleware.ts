@@ -9,9 +9,9 @@ import { sendError } from '../utils/response.utils';
  */
 export const errorHandler = (
   err: Error,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
   console.error('❌ Error:', err);
 
@@ -41,7 +41,7 @@ export const errorHandler = (
 export const notFoundHandler = (
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
   sendError(res, 'NOT_FOUND', `Route ${req.originalUrl} not found`, 404);
 };

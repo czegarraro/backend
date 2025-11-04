@@ -146,7 +146,7 @@ export const addComment = async (req: Request, res: Response, next: NextFunction
 /**
  * Get filter options
  */
-export const getFilterOptions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getFilterOptions = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const options = await getProblemService().getFilterOptions();
     sendSuccess(res, options);

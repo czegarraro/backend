@@ -1,7 +1,7 @@
 /**
  * JWT Utilities
  */
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { config } from '../config/env';
 import { AuthUser } from '../types/api.types';
 
@@ -9,11 +9,11 @@ import { AuthUser } from '../types/api.types';
  * Generate JWT token
  */
 export const generateToken = (user: AuthUser): string => {
-  return jwt.sign(
-    { username: user.username },
-    config.jwt.secret,
-    { expiresIn: config.jwt.expiresIn }
-  );
+  const payload = { username: user.username };
+  const secret = config.jwt.secret;
+  const options: SignOptions = { expiresIn: config.jwt.expiresIn as any };
+
+  return jwt.sign(payload, secret, options);
 };
 
 /**

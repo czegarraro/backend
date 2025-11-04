@@ -129,7 +129,7 @@ export class ProblemRepository {
         .sort(sort)
         .skip(skip)
         .limit(limit)
-        .toArray() as Promise<Problem[]>,
+        .toArray() as unknown as Promise<Problem[]>,
       this.collection.countDocuments(mongoFilter),
     ]);
 
@@ -185,7 +185,7 @@ export class ProblemRepository {
       query = query.limit(10000);
     }
     
-    const problems = await query.toArray() as Problem[];
+    const problems = await query.toArray() as unknown as Problem[];
     return problems;
   }
 

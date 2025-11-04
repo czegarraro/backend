@@ -62,7 +62,7 @@ export const createApp = (): Application => {
   app.use('/api/v1', routes);
 
   // Root endpoint
-  app.get('/', (req, res) => {
+  app.get('/', (_req, res) => {
     res.json({
       name: 'Dynatrace Problems API',
       version: '1.0.0',

@@ -44,7 +44,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 /**
  * Logout endpoint
  */
-export const logout = async (req: Request, res: Response): Promise<void> => {
+export const logout = async (_req: Request, res: Response): Promise<void> => {
   res.clearCookie('token');
   sendSuccess(res, null, 'Logout successful');
 };

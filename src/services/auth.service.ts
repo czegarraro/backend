@@ -1,7 +1,6 @@
 /**
  * Authentication Service
  */
-import bcrypt from 'bcryptjs';
 import { generateToken } from '../utils/jwt.utils';
 import { AuthUser } from '../types/api.types';
 
