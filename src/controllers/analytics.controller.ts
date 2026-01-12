@@ -144,3 +144,16 @@ export const getRootCauseDistribution = async (req: Request, res: Response, next
     next(error);
   }
 };
+
+/**
+ * Get auto-remediation stats (donut chart)
+ */
+export const getAutoRemediationStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const filters: ProblemFilters = req.query;
+    const data = await getAnalyticsService().getAutoRemediationStats(filters);
+    sendSuccess(res, data);
+  } catch (error) {
+    next(error);
+  }
+};

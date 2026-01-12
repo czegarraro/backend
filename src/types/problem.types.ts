@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Core type definitions for Dynatrace Problems
  */
 
@@ -25,7 +25,7 @@ export interface EntityTag {
 }
 
 export interface EvidenceDetail {
-  evidenceType: 'EVENT' | 'METRIC' | 'TRANSACTIONAL' | 'MAINTENANCE_WINDOW';
+  evidenceType: "EVENT" | "METRIC" | "TRANSACTIONAL" | "MAINTENANCE_WINDOW";
   displayName: string;
   entity: Entity;
   groupingEntity: Entity;
@@ -71,9 +71,18 @@ export interface ImpactAnalysis {
   [key: string]: any;
 }
 
-export type ImpactLevel = 'INFRASTRUCTURE' | 'SERVICES' | 'APPLICATION' | 'ENVIRONMENT';
-export type SeverityLevel = 'AVAILABILITY' | 'ERROR' | 'PERFORMANCE' | 'RESOURCE_CONTENTION' | 'CUSTOM_ALERT';
-export type ProblemStatus = 'OPEN' | 'CLOSED';
+export type ImpactLevel =
+  | "INFRASTRUCTURE"
+  | "SERVICES"
+  | "APPLICATION"
+  | "ENVIRONMENT";
+export type SeverityLevel =
+  | "AVAILABILITY"
+  | "ERROR"
+  | "PERFORMANCE"
+  | "RESOURCE_CONTENTION"
+  | "CUSTOM_ALERT";
+export type ProblemStatus = "OPEN" | "CLOSED";
 
 export interface Problem {
   _id?: string;
@@ -95,6 +104,8 @@ export interface Problem {
   evidenceDetails: EvidenceDetails;
   recentComments: RecentComments;
   impactAnalysis: ImpactAnalysis;
+  Autoremediado?: boolean | string; // MongoDB stores as "Si"/"No"
+  FuncionoAutoRemediacion?: boolean | string; // MongoDB stores as "Si"/"No"
 }
 
 export interface ProblemFilters {
@@ -113,6 +124,8 @@ export interface ProblemFilters {
   evidenceType?: string[];
   search?: string;
   hasRootCause?: boolean | null; // null = all, true = has root cause, false = no root cause
+  isAutoRemediated?: boolean | null; // null = all, true = auto-remediated, false = not auto-remediated
+  autoRemediationWorked?: boolean | null; // null = all, true = worked, false = didn't work
 }
 
 export interface PaginatedProblemsResponse {
@@ -133,3 +146,4 @@ export interface DashboardKPIs {
   githubActionProblems: number;
   criticalProblems: number;
 }
+

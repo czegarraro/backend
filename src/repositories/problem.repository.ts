@@ -1,9 +1,13 @@
 /**
  * Problem Repository - Data Access Layer
  */
-import { Collection, Filter, Sort } from 'mongodb';
-import { database } from '../config/database';
-import { Problem, ProblemFilters, PaginatedProblemsResponse } from '../types/problem.types';
+import { Collection, Filter, Sort } from "mongodb";
+import { database } from "../config/database";
+import {
+  Problem,
+  ProblemFilters,
+  PaginatedProblemsResponse,
+} from "../types/problem.types";
 
 export class ProblemRepository {
   private collection: Collection;
@@ -35,17 +39,21 @@ export class ProblemRepository {
 
     // Management Zones filter
     if (filters.managementZones && filters.managementZones.length > 0) {
-      mongoFilter['managementZones.name'] = { $in: filters.managementZones };
+      mongoFilter["managementZones.name"] = { $in: filters.managementZones };
     }
 
     // Affected Entity Types filter
     if (filters.affectedEntityTypes && filters.affectedEntityTypes.length > 0) {
-      mongoFilter['affectedEntities.entityId.type'] = { $in: filters.affectedEntityTypes };
+      mongoFilter["affectedEntities.entityId.type"] = {
+        $in: filters.affectedEntityTypes,
+      };
     }
 
     // Entity Tags filter
     if (filters.entityTags && filters.entityTags.length > 0) {
-      mongoFilter['entityTags.stringRepresentation'] = { $in: filters.entityTags };
+      mongoFilter["entityTags.stringRepresentation"] = {
+        $in: filters.entityTags,
+      };
     }
 
     // Date range filter
@@ -62,20 +70,25 @@ export class ProblemRepository {
     // Has comments filter
     if (filters.hasComments !== undefined) {
       if (filters.hasComments) {
-        mongoFilter['recentComments.totalCount'] = { $gt: 0 };
+        mongoFilter["recentComments.totalCount"] = { $gt: 0 };
       } else {
-        mongoFilter['recentComments.totalCount'] = 0;
+        mongoFilter["recentComments.totalCount"] = 0;
       }
     }
 
     // GitHub Actions filter
     if (filters.hasGitHubActions) {
-      mongoFilter['recentComments.comments.content'] = { $regex: 'GitHub Actions', $options: 'i' };
+      mongoFilter["recentComments.comments.content"] = {
+        $regex: "GitHub Actions",
+        $options: "i",
+      };
     }
 
     // Evidence Type filter
     if (filters.evidenceType && filters.evidenceType.length > 0) {
-      mongoFilter['evidenceDetails.details.evidenceType'] = { $in: filters.evidenceType };
+      mongoFilter["evidenceDetails.details.evidenceType"] = {
+        $in: filters.evidenceType,
+      };
     }
 
     // Text search filter
@@ -90,13 +103,34 @@ export class ProblemRepository {
       } else {
         mongoFilter.$or = [
           { rootCauseEntity: null },
-          { rootCauseEntity: { $exists: false } }
+          { rootCauseEntity: { $exists: false } },
         ];
       }
     }
 
+    // Auto-Remediated filter (MongoDB stores as "Si"/"No" strings)
+    if (
+      filters.isAutoRemediated !== undefined &&
+      filters.isAutoRemediated !== null
+    ) {
+      mongoFilter.Autoremediado = filters.isAutoRemediated ? "Si" : "No";
+    }
+
+    // Auto-Remediation Worked filter (MongoDB stores as "Si"/"No" strings)
+    if (
+      filters.autoRemediationWorked !== undefined &&
+      filters.autoRemediationWorked !== null
+    ) {
+      mongoFilter.FuncionoAutoRemediacion = filters.autoRemediationWorked
+        ? "Si"
+        : "No";
+    }
+
     // Duration filter (using duration field from DB)
-    if (filters.durationMin !== undefined || filters.durationMax !== undefined) {
+    if (
+      filters.durationMin !== undefined ||
+      filters.durationMax !== undefined
+    ) {
       mongoFilter.duration = {};
       if (filters.durationMin !== undefined) {
         mongoFilter.duration.$gte = filters.durationMin;
@@ -116,12 +150,12 @@ export class ProblemRepository {
     filters: ProblemFilters,
     page: number = 1,
     limit: number = 10,
-    sortBy: string = 'startTime',
-    sortOrder: 'asc' | 'desc' = 'desc'
+    sortBy: string = "startTime",
+    sortOrder: "asc" | "desc" = "desc"
   ): Promise<PaginatedProblemsResponse> {
     const mongoFilter = this.buildFilter(filters);
     const skip = (page - 1) * limit;
-    const sort: Sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
+    const sort: Sort = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
 
     const [problems, total] = await Promise.all([
       this.collection
@@ -146,7 +180,9 @@ export class ProblemRepository {
    * Find problem by ID
    */
   async findById(problemId: string): Promise<Problem | null> {
-    const problem = await this.collection.findOne({ problemId }) as Problem | null;
+    const problem = (await this.collection.findOne({
+      problemId,
+    })) as Problem | null;
     return problem;
   }
 
@@ -154,9 +190,12 @@ export class ProblemRepository {
    * Get all problems (for analytics)
    * Optimized with projection to only fetch needed fields
    */
-  async findAllProblems(filters?: ProblemFilters, limit?: number): Promise<Problem[]> {
+  async findAllProblems(
+    filters?: ProblemFilters,
+    limit?: number
+  ): Promise<Problem[]> {
     const mongoFilter = filters ? this.buildFilter(filters) : {};
-    
+
     // Projection to only fetch fields needed for analytics
     const projection = {
       problemId: 1,
@@ -169,34 +208,39 @@ export class ProblemRepository {
       endTime: 1,
       duration: 1,
       rootCauseEntity: 1,
-      'managementZones.name': 1,
-      'affectedEntities.entityId.type': 1,
-      'evidenceDetails.details.evidenceType': 1,
-      'recentComments.totalCount': 1,
-      'recentComments.comments': 1,
+      Autoremediado: 1,
+      FuncionoAutoRemediacion: 1,
+      "managementZones.name": 1,
+      "affectedEntities.entityId.type": 1,
+      "evidenceDetails.details.evidenceType": 1,
+      "recentComments.totalCount": 1,
+      "recentComments.comments": 1,
     };
 
     let query = this.collection.find(mongoFilter, { projection });
-    
+
     // Apply limit if provided (default to 10000 for analytics)
     if (limit) {
       query = query.limit(limit);
     } else {
       query = query.limit(10000);
     }
-    
-    const problems = await query.toArray() as unknown as Problem[];
+
+    const problems = (await query.toArray()) as unknown as Problem[];
     return problems;
   }
 
   /**
    * Update problem status
    */
-  async updateStatus(problemId: string, status: 'OPEN' | 'CLOSED'): Promise<Problem | null> {
+  async updateStatus(
+    problemId: string,
+    status: "OPEN" | "CLOSED"
+  ): Promise<Problem | null> {
     const result = await this.collection.findOneAndUpdate(
       { problemId },
       { $set: { status } },
-      { returnDocument: 'after' }
+      { returnDocument: "after" }
     );
     return result as Problem | null;
   }
@@ -208,10 +252,10 @@ export class ProblemRepository {
     const result = await this.collection.findOneAndUpdate(
       { problemId },
       {
-        $push: { 'recentComments.comments': comment },
-        $inc: { 'recentComments.totalCount': 1 },
+        $push: { "recentComments.comments": comment },
+        $inc: { "recentComments.totalCount": 1 },
       },
-      { returnDocument: 'after' }
+      { returnDocument: "after" }
     );
     return result as Problem | null;
   }
@@ -221,7 +265,7 @@ export class ProblemRepository {
    */
   async getDistinctValues(field: string): Promise<string[]> {
     const values = await this.collection.distinct(field);
-    return values.filter(v => v !== null && v !== undefined);
+    return values.filter((v) => v !== null && v !== undefined);
   }
 
   /**
@@ -236,18 +280,20 @@ export class ProblemRepository {
       entityTypes,
       evidenceTypes,
     ] = await Promise.all([
-      this.getDistinctValues('impactLevel'),
-      this.getDistinctValues('severityLevel'),
-      this.getDistinctValues('status'),
-      this.getDistinctValues('managementZones.name'),
-      this.getDistinctValues('affectedEntities.entityId.type'),
-      this.getDistinctValues('evidenceDetails.details.evidenceType'),
+      this.getDistinctValues("impactLevel"),
+      this.getDistinctValues("severityLevel"),
+      this.getDistinctValues("status"),
+      this.getDistinctValues("managementZones.name"),
+      this.getDistinctValues("affectedEntities.entityId.type"),
+      this.getDistinctValues("evidenceDetails.details.evidenceType"),
     ]);
 
     // Get all unique tags
-    const allProblems = await this.collection.find({}, { projection: { entityTags: 1 } }).toArray();
+    const allProblems = await this.collection
+      .find({}, { projection: { entityTags: 1 } })
+      .toArray();
     const tags = new Set<string>();
-    allProblems.forEach(problem => {
+    allProblems.forEach((problem) => {
       problem.entityTags?.forEach((tag: any) => {
         if (tag.stringRepresentation) {
           tags.add(tag.stringRepresentation);

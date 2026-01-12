@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Analytics Service - Business Logic for Analytics
  */
 import { ProblemRepository } from '../repositories/problem.repository';
@@ -364,4 +364,23 @@ export class AnalyticsService {
 
     return { data };
   }
+
+
+  /**
+   * Get auto-remediation stats (donut chart data)
+   */
+  async getAutoRemediationStats(filters?: ProblemFilters) {
+    const problems = await this.repository.findAllProblems(filters);
+
+    const autoRemediated = problems.filter(p => p.Autoremediado === true).length;
+    const notAutoRemediated = problems.length - autoRemediated;
+
+    const data = [
+      { name: 'S�', value: autoRemediated },
+      { name: 'No', value: notAutoRemediated },
+    ];
+
+    return { data, total: problems.length, percentage: problems.length > 0 ? (autoRemediated / problems.length) * 100 : 0 };
+  }
 }
+

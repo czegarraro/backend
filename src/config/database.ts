@@ -1,7 +1,7 @@
 /**
  * MongoDB Database Configuration
  */
-import { MongoClient, Db } from 'mongodb';
+import { MongoClient, Db } from "mongodb";
 
 export interface MongoDBConfig {
   connectionString: string;
@@ -16,9 +16,9 @@ class DatabaseConnection {
 
   constructor() {
     this.config = {
-      connectionString: process.env.MONGODB_URI || '',
-      databaseName: process.env.MONGODB_DB_NAME || 'problemas-dynatrace-uno',
-      collectionName: process.env.MONGODB_COLLECTION_NAME || 'problems',
+      connectionString: process.env.MONGODB_URI || "",
+      databaseName: process.env.MONGODB_DB_NAME || "problemas-dynatrace-uno",
+      collectionName: process.env.MONGODB_COLLECTION_NAME || "problems",
     };
   }
 
@@ -28,17 +28,17 @@ class DatabaseConnection {
   async connect(): Promise<void> {
     try {
       if (this.client) {
-        console.log('✅ Already connected to MongoDB');
+        console.log("✅ Already connected to MongoDB");
         return;
       }
 
-      console.log('🔄 Connecting to MongoDB Atlas...');
-      
-      // MongoDB connection options with extended timeouts
+      console.log("🔄 Connecting to MongoDB Atlas...");
+
+      // MongoDB connection options with short timeouts for faster startup
       const options = {
-        serverSelectionTimeoutMS: 60000, // 60 seconds
-        socketTimeoutMS: 60000, // 60 seconds
-        connectTimeoutMS: 60000, // 60 seconds
+        serverSelectionTimeoutMS: 5000, // 5 seconds
+        socketTimeoutMS: 5000, // 5 seconds
+        connectTimeoutMS: 5000, // 5 seconds
         maxPoolSize: 10,
         minPoolSize: 2,
         retryWrites: true,
@@ -56,13 +56,15 @@ class DatabaseConnection {
       // Create indexes for optimized queries
       await this.createIndexes();
 
-      console.log('✅ Successfully connected to MongoDB Atlas');
+      console.log("✅ Successfully connected to MongoDB Atlas");
       console.log(`📊 Database: ${this.config.databaseName}`);
       console.log(`📁 Collection: ${this.config.collectionName}`);
     } catch (error) {
-      console.error('❌ MongoDB connection error:', error);
-      console.error('💡 Tip: Verifica que tu IP esté autorizada en MongoDB Atlas');
-      console.error('💡 Tip: Verifica las credenciales en el archivo .env');
+      console.error("❌ MongoDB connection error:", error);
+      console.error(
+        "💡 Tip: Verifica que tu IP esté autorizada en MongoDB Atlas"
+      );
+      console.error("💡 Tip: Verifica las credenciales en el archivo .env");
       throw error;
     }
   }
@@ -87,18 +89,18 @@ class DatabaseConnection {
       await collection.createIndex({ startTime: -1 });
 
       // Index for management zones
-      await collection.createIndex({ 'managementZones.name': 1 });
+      await collection.createIndex({ "managementZones.name": 1 });
 
       // Text index for search
       await collection.createIndex({
-        title: 'text',
-        displayId: 'text',
-        'recentComments.comments.content': 'text',
+        title: "text",
+        displayId: "text",
+        "recentComments.comments.content": "text",
       });
 
-      console.log('✅ Database indexes created successfully');
+      console.log("✅ Database indexes created successfully");
     } catch (error) {
-      console.warn('⚠️  Index creation warning:', error);
+      console.warn("⚠️  Index creation warning:", error);
     }
   }
 
@@ -107,7 +109,7 @@ class DatabaseConnection {
    */
   getDb(): Db {
     if (!this.db) {
-      throw new Error('Database not connected. Call connect() first.');
+      throw new Error("Database not connected. Call connect() first.");
     }
     return this.db;
   }
@@ -128,7 +130,7 @@ class DatabaseConnection {
       await this.client.close();
       this.client = null;
       this.db = null;
-      console.log('✅ MongoDB connection closed');
+      console.log("✅ MongoDB connection closed");
     }
   }
 

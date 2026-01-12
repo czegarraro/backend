@@ -40,4 +40,8 @@ router.get('/root-cause-analysis', analyticsController.getRootCauseAnalysis);
 // GET /api/v1/analytics/root-cause-distribution
 router.get('/root-cause-distribution', analyticsController.getRootCauseDistribution);
 
+
+// GET /api/v1/analytics/auto-remediation-stats
+router.get('/auto-remediation-stats', analyticsController.getAutoRemediationStats);
+
 export default router;
